@@ -2,10 +2,12 @@
 // css framework : tailwind
 
 const Koa = require("koa")
-const path = require("path")
 const Pug = require("koa-pug")
-const websockify = require("koa-websocket")
+const path = require("path")
 const route = require("koa-route")
+const serve = require("koa-static")
+const websockify = require("koa-websocket")
+const mount = require("koa-mount")
 
 const app = websockify(new Koa())
 
@@ -14,18 +16,28 @@ new Pug({
   app,
 })
 
+app.use(mount("/public"), serve("src/public"))
+
 app.use(async (ctx) => {
-  ctx.body = "Hello World"
   await ctx.render("main")
 })
 
 app.ws.use(
-  route.all("/test/:id", (ctx) => {
-    ctx.websocket.send("Hello World")
-    ctx.websocket.on("message", (message) => {
-      console.log(message)
+  route.all("/ws", (ctx) => {
+    ctx.websocket.on("message", (data) => {
+      if (typeof data !== string) {
+        return
+      }
+      const { nickname, message } = JSON.parse(data)
+
+      ctx.websocket.send(
+        JSON.stringify({
+          nickname,
+          message,
+        })
+      )
     })
   })
 )
 
-app.listen(3000)
+app.listen(5000)
