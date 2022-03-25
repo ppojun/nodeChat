@@ -16,7 +16,7 @@ new Pug({
   app,
 })
 
-app.use(mount("/public"), serve("src/public"))
+app.use(mount("/public", serve("src/public")))
 
 app.use(async (ctx) => {
   await ctx.render("main")
