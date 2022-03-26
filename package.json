@@ -6,6 +6,9 @@
   "scripts": {
     "server": "nodemon src/main.js"
   },
+  "engines": {
+    "node": "16.13.2"
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -15,6 +18,7 @@
     "koa-route": "^3.2.0",
     "koa-static": "^5.0.0",
     "koa-websocket": "^6.0.0",
+    "mongodb": "^4.4.1",
     "tailwindcss": "^3.0.23"
   },
   "devDependencies": {
