@@ -1,11 +1,12 @@
 //const { message } = require('koa/lib/response.js')
 
 //IIFE implementation을 숨겨야할 경우
+// IIFE
 ;(() => {
   const socket = new WebSocket(`ws://${window.location.host}/ws`)
   const formEl = document.getElementById('form')
-  const inputEl = document.getElementById('input')
   const chatsEl = document.getElementById('chats')
+  const inputEl = document.getElementById('input')
 
   if (!formEl || !inputEl || !chatsEl) {
     throw new Error('Init failed!')
@@ -28,7 +29,7 @@
   const myNickname = `${pickRandom(adjectives)} ${pickRandom(animals)}`
 
   formEl.addEventListener('submit', (event) => {
-    event.preventDefault() //페이지 리프레쉬 없이 가능
+    event.preventDefault()
     socket.send(
       JSON.stringify({
         nickname: myNickname,
@@ -40,7 +41,7 @@
 
   const drawChats = () => {
     chatsEl.innerHTML = ''
-    chats.forEach(({ nickname, message }) => {
+    chats.forEach(({ message, nickname }) => {
       const div = document.createElement('div')
       div.innerText = `${nickname}: ${message}`
       chatsEl.appendChild(div)
@@ -49,6 +50,7 @@
 
   socket.addEventListener('message', (event) => {
     const { type, payload } = JSON.parse(event.data)
+
     if (type === 'sync') {
       const { chats: syncedChats } = payload
       chats.push(...syncedChats)
@@ -56,6 +58,7 @@
       const chat = payload
       chats.push(chat)
     }
+
     drawChats()
   })
 })()

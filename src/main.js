@@ -1,5 +1,6 @@
 // template enginee : pug
 // css framework : tailwind
+require('dotenv').config()
 
 const Koa = require('koa')
 const Pug = require('koa-pug')
@@ -9,6 +10,7 @@ const serve = require('koa-static')
 const websockify = require('koa-websocket')
 const mount = require('koa-mount')
 const mongoClient = require('./mongo')
+
 const app = websockify(new Koa())
 
 new Pug({
@@ -26,13 +28,14 @@ const _client = mongoClient.connect()
 
 async function getChatsCollection() {
   const client = await _client
-  return client.db('chat').collection('chats')
+  return client.db().collection('chats')
 }
 
+// Using routes
 app.ws.use(
   route.all('/ws', async (ctx) => {
     const chatsCollection = await getChatsCollection()
-    chatsCollection.find(
+    const chatsCursor = chatsCollection.find(
       {},
       {
         sort: {
@@ -41,7 +44,7 @@ app.ws.use(
       }
     )
 
-    const chats = await chatCursor.toArray()
+    const chats = await chatsCursor.toArray()
     ctx.websocket.send(
       JSON.stringify({
         type: 'sync',
@@ -53,7 +56,6 @@ app.ws.use(
 
     ctx.websocket.on('message', async (data) => {
       if (typeof data !== 'string') {
-        console.log('not string')
         return
       }
 
@@ -63,9 +65,11 @@ app.ws.use(
         ...chat,
         createdAt: new Date(),
       })
+
       const { nickname, message } = chat
 
       const { server } = app.ws
+
       if (!server) {
         return
       }
@@ -75,8 +79,8 @@ app.ws.use(
           JSON.stringify({
             type: 'chat',
             payload: {
-              nickname,
               message,
+              nickname,
             },
           })
         )
